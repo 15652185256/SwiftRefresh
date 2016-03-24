@@ -8,6 +8,9 @@
 
 import UIKit
 
+private let RefreshViewHeight: CGFloat = 200
+private let kSceneHeight: CGFloat = 120.0
+
 class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     var tableView:UITableView!//主界面
@@ -17,6 +20,10 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     var number = 1
 
     var createControl = ZCControl()
+    
+    private var refreshView: RefreshView!//刷新动画视图
+    
+    
     
 
     
@@ -52,15 +59,19 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         self.tableView!.registerClass(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         
-        let view = createControl.createView(CGRectMake(0, -200, WIDTH, 200))
-        view.backgroundColor = UIColor.greenColor()
-        tableView.addSubview(view)
+//        let view = createControl.createView(CGRectMake(0, -200, WIDTH, 200))
+//        view.backgroundColor = UIColor.greenColor()
+//        tableView.addSubview(view)
+//        
+//        let label = createControl.createLabel(CGRectMake(0, 80, WIDTH, 120), Font: 12, Text: "下拉刷新")
+//        label.textColor = UIColor.blackColor()
+//        label.textAlignment = NSTextAlignment.Center
+//        view.addSubview(label)
+//        label.tag=30000;
         
-        let label = createControl.createLabel(CGRectMake(0, 80, WIDTH, 120), Font: 12, Text: "下拉刷新")
-        label.textColor = UIColor.blackColor()
-        label.textAlignment = NSTextAlignment.Center
-        view.addSubview(label)
-        label.tag=30000;
+        
+        refreshView = RefreshView(frame: CGRectMake(0, -RefreshViewHeight, WIDTH, RefreshViewHeight), scrollView: tableView)
+        tableView.insertSubview(refreshView, atIndex: 0)
     }
     
     //总行数
@@ -81,6 +92,9 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     //自己实现下拉刷新要借助于scrollView的didScroll方法,所以要实现这个方法
     func scrollViewDidScroll(scrollView: UIScrollView) {
         
+        //在这里我们要把这个通知传递给refreshView
+        refreshView.scrollViewDidScroll(scrollView)
+        
         //在这里,可以通过tableView的滚动偏移量来决定做什么事情
         //print(scrollView.contentOffset.y)
         
@@ -91,13 +105,13 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         
         
         //先去获取一下label
-        let label = scrollView.viewWithTag(30000) as! UILabel!
-        if scrollView.contentOffset.y < -120 {
+        //let label = scrollView.viewWithTag(30000) as! UILabel!
+        if scrollView.contentOffset.y < -kSceneHeight {
             
             //满足条件后,进来第一件事,是先把刷新标记置成刷新状态
             isRefresh = true
             
-            label.text = "松开即刷新数据"
+            //label.text = "松开即刷新数据"
             
             //加载数据,那么因为在这里,加载数据是假数据,所以说很快,如果在项目中实现,这里变成网络请求
             //在这去发起一个网络请求,
@@ -108,12 +122,12 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
             let time:NSTimeInterval = 2.0
             let delay = dispatch_time(DISPATCH_TIME_NOW, Int64(time * Double(NSEC_PER_SEC)))
             dispatch_after(delay,dispatch_get_main_queue()){
-                print("2 秒后输出")
+                //print("2 秒后输出")
                 self.downloadData()
             }
             
         } else {
-            label.text = "下拉刷新"
+            //label.text = "下拉刷新"
         }
         
     }
@@ -139,6 +153,6 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         // Dispose of any resources that can be recreated.
     }
 
-
+    //github.com/FangYiXiong/SwiftPullToRefresh_part3_Finished/archive/master.zip
 }
 
